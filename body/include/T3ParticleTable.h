@@ -13,7 +13,7 @@ class ParticleTable {
 public:
   ParticleTable();
   bool IsNucleus(PDG_t aPDG) const;
-  auto GetMass(PDG_t aPDG) const;
+  double GetMass(PDG_t aPDG) const;
   auto GetZ(PDG_t aPDG) const;
   auto GetA(PDG_t aPDG) const;
   double GetSpin(PDG_t aPDG) const;
@@ -26,7 +26,7 @@ private:
   double protonMass = 938.272 * MeV;
   double neutronMass = 939.566 * MeV;
   double aeMass = 931.494 * MeV;
-  PDG_t  nucleusPDGStartAfter = PDG_t(1000000000);
+  PDG_t  nucleusPDGStartAfter = t3::PDG_t(1000000000);
 };
 
 inline std::pair<uint64_t, uint64_t> ParticleTable::GetZA(PDG_t aPDG) const {
@@ -82,7 +82,7 @@ inline PDG_t ParticleTable::makePDGfromZandA(uint64_t protonNumber,
       1000000000u + 10000u * protonNumber + baryonNumber * 10u));
 }
 
-inline auto ParticleTable::GetMass(PDG_t aPDG) const
+inline double ParticleTable::GetMass(PDG_t aPDG) const
 {
   //\\//std::cout<<"aPDG="<<aPDG<<std::endl;
 //#1
@@ -139,7 +139,7 @@ inline auto ParticleTable::GetMass(PDG_t aPDG) const
 //#3
 //THIS WORKS CORRECTLY:  
   //*
-  auto m=0.0;
+  double m=0.0;
   if(aPDG > nucleusPDGStartAfter)
   {
     if(aPDG == makePDGfromZandA(1,2))      return 1875.6 * MeV;
@@ -149,8 +149,15 @@ inline auto ParticleTable::GetMass(PDG_t aPDG) const
     {
        int Z=GetZ(aPDG);
        double A=GetA(aPDG);
-       return A * aeMass - Z * electronMass - 48.4917 * MeV;
+       m=A * aeMass - Z * electronMass - 48.4917 * MeV;
     }
+    else
+    {
+      int Z=GetZ(aPDG);
+      double A=GetA(aPDG);
+      m=A * aeMass - Z * electronMass;
+    }
+        
   }
   else
   {
@@ -160,6 +167,9 @@ inline auto ParticleTable::GetMass(PDG_t aPDG) const
     else if(aPDG==PDG_t(2212)) m=protonMass;
     else if(aPDG==PDG_t(2112)) m=neutronMass;
   }
+
+  //std::cout<<"### m="<<m/MeV<<" aPDG="<<aPDG<<std::endl;
+  
   return m;
   //*/
 }

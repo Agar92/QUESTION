@@ -40,6 +40,26 @@ if(CUDA)
 target_compile_definitions(${PROJECT_NAME} PRIVATE CUDA)
 endif()
 
+
+###include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+###for body:
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/body/include/)
+###for management:
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/management/include/)
+###for tpt:
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tpt/include/)
+
+
+###for body:
+file(GLOB BODY_SRC ${CMAKE_CURRENT_SOURCE_DIR}/body/src/*.cpp)
+###for management:
+file(GLOB MANAGEMENT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/management/src/*.cc)
+###for tpt:
+file(GLOB TPT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/tpt/src/*.cpp)
+
+target_sources(${PROJECT_NAME} PUBLIC ${BODY_SRC} ${MANAGEMENT_SRC} ${TPT_SRC})
+
 ###message (SRC_LIST= ${SRC_LIST})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")

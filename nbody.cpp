@@ -2,11 +2,9 @@
 #include <iostream>
 #include "unistd.h"
 
-#include "T3Globals.h"
-#include "T3MSContiniousProcessImpl.h"
-
-using namespace t3;
-using namespace units;
+#include "T3DataHolder.h"
+#include "T3InelasticddCSImpl.h"
+#include "T3InelasticddFSImpl.h"
 
 //////////////////////////////////////////////////////////////////////////////
 // Program main
@@ -26,28 +24,49 @@ int main(int argc, char **argv)
     std::cout<<"OPENACC IS NOT DEFINED, CUDA IS NOT DEFINED"<<std::endl;
   #endif
 #endif
+    
+  auto begin=std::chrono::steady_clock::now();
 
-
-    ParticleTable cParticleTable;
-    const PDG_t protonPDG=PDG_t(2212);
-    const PDG_t DeuteronPDG=cParticleTable.makePDGfromZandA(1,2);
-    const PDG_t titanPDG=cParticleTable.makePDGfromZandA(22,48);
-    const MatID_t material=MatID_t(2);
-    const double md=cParticleTable.GetMass(DeuteronPDG);
-    const double mtitan=cParticleTable.GetMass(titanPDG);
-    const double TTls= 10.0 * MeV;
-    const double E=md+TTls;
-    const double pls=std::sqrt(TTls*(2*md+TTls));
-    t3::T3LorentzVector<double> pinc(0.0, 0.0, pls, E);
-
-    T3MSContiniousProcess<double> mscontprocess;
-    unsigned int rnd_seed=1;
-    //*
-    for(int i=0; i<100; ++i)
-    {
-      mscontprocess.MakeMSRandomAngleScatteringOnParticle4Momentum(DeuteronPDG, 1.0*units::um, pinc,
-                                                                   rnd_seed, cParticleTable, material);
-    }
-    //*/
+  DataHolder<FloatingType> d;
   
+  if (report)
+    std::cout << "size of DataHolder is ~"
+              << sizeof(DataHolder<FloatingType>) / float(1ul << 30ul)
+              << "GB, size of d is ~" << sizeof(d) / float(1ul << 30ul) << "GB"
+              << std::endl;
+  
+  int count=0;
+  LIFE=0;
+  MAX_ELEMENT=0;
+#ifdef OPENACC
+#pragma acc data create(ind01,ind23,arr1,arr2,arr3,outPDG1Inelasticdd,outPDG2Inelasticdd,outP1Inelasticdd,outP2Inelasticdd,outPDG1ElasticEMIonIon,outP1ElasticEMIonIon,outPDG1ElasticStrongIonIon,outP1ElasticStrongIonIon,csBorderDataFS,csMultipleScattering,csInelasticdd,csElasticEMIonIon,csElasticStrongIonIon) \
+  copyin(particles,d,inelasticddProcess,ElasticEMIonIonProcess,ElasticStrongIonIonProcess)
+  {
+#endif
+    
+    bool InitLoop=true;
+    for(unsigned int step=1; GetNumOfAliveParticles()>0 || InitLoop==true || GetNumOfInjectedParticles()<Np; ++step)
+    { 
+      d.Inject();     
+      d.Propagate();
+      //d.Compress();
+      d.React();
+      if(report)
+      {
+        std::cout << step << "   " << GetNumOfAliveParticles() << "    "
+                  << GetNoNew() <<  "   " << GetNumOfInjectedParticles() << " "
+                  << GetSumDGam() <<std::endl;
+      }
+      if(InitLoop) InitLoop=false;
+      ++count;
+    }
+#ifdef OPENACC
+  }
+#endif
+
+  auto end=std::chrono::steady_clock::now();
+	auto elapsed_ms=std::chrono::duration_cast<std::chrono::milliseconds>(end-begin);
+	std::cout<<"time="<<elapsed_ms.count()<<" ms, G="<<G<<", K="<<K<<", Ntop="
+           <<Ntop<<", SumDG="<<SumDGam<<std::endl;
+  std::cout<<"Nbin="<<Nbin<<" FloatingType="<<typeid(FloatingType).name()<<std::endl;
 }

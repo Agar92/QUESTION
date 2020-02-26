@@ -37,26 +37,54 @@ public:
     const t3::PDG_t sPDG = deuteronPDG;
     const int incZA = 1002;//1000*Z+A//inc deuteron
     const auto rid = "2";
+    
     T3R_DDCS rdcs;
-    std::cout<<"STEP #1"<<std::endl;
-    rdcs.Load_from_CS();
-    T3R_RW trw=rdcs.GetT3R_RW();
-    std::cout<<"trw: "<<" size="<<trw.size()<<std::endl;
+    ///rdcs.Load_from_CS();
+    ///T3R_RW trw=rdcs.GetT3R_RW();
+
+    
+    T3R_RW trw;
+    trw.load_binary(std::string("tpt/include/ElasticDDCS.dat"));
+
+
+    //std::cout<<"trw: "<<" size="<<trw.size()<<std::endl;
+    //std::cout<<trw<<std::endl;
+        
     for(int i=0; i<trw.size(); ++i)
     {
       E[i]=trw.NDI(i)->E();
       lnE[i]=std::log(E[i]);
       CS[i]=trw.NDI(i)->XS();
     }
-    std::cout<<"Check cross sections in T3ElasticStrongIonIon():"<<std::endl;
-    for(int i=0; i<100; ++i) std::cout<<"("<<E[i]<<","<<CS[i]/mbarn<<")   ";
-    std::cout<<std::endl;
+    //Check:
+    ///std::cout<<"Check cross sections in T3ElasticStrongIonIon():"<<std::endl;
+    ///for(int i=0; i<100; ++i) std::cout<<"("<<E[i]<<","<<CS[i]/mbarn<<")   ";
+    ///std::cout<<std::endl;
 
     md=aParticleTable.GetMass(deuteronPDG);
     //---------------------------------------------------------------------//
-    rdcs.Load_from_PS(tgZ, tgA, rid, sPDG, incZA);
-    T3NSGangular_RW rw=rdcs.GetT3NSGangular_RW();
+    ///rdcs.Load_from_PS(tgZ, tgA, rid, sPDG, incZA);
+    
+    //get vector of records:
+    ///T3NSGangular_RW rw=rdcs.GetT3NSGangular_RW();
+
+    
+    T3NSGangular_RW rw;
+    rw.load_binary(std::string("tpt/include/ElasticDDPS.dat"));
+
+
+    //std::cout<<"md="<<md/MeV<<std::endl;
+    //std::cout<<"rw:"<<std::endl;
+    //std::cout<<rw<<std::endl;
+    //exit(0);
+
+    //have only 1 record:
     T3NSGangular_RWrecord rwrec=rw.at(0);
+
+    //std::cout<<"rwrec:"<<std::endl;
+    //std::cout<<rwrec<<std::endl;
+    //exit(0);
+
     const Floating Emin = rwrec.front().Get_E();
     const Floating Emax = rwrec.back().Get_E();
     const Floating Ediff = Emax - Emin;
@@ -75,12 +103,14 @@ public:
         db.Set_b(i, j, nodes_i.Get_b(j));
         db.Set_c(i, j, nodes_i.Get_c(j));
       }
-      db.Set_Einc(i, Ei);
-    }
+      db.Set_Einc(i, Ei);      
+    }      
+    
     db.SetXmin(Xmin);
     db.SetXmax(Xmax);
+    
   }
-  
+
   inline Floating
   GetCS(Floating Tls, PDG_t incPDG, PDG_t targetPDG,
         ParticleTable & aParticleTable) const;
@@ -106,6 +136,7 @@ private:
   Floating E[100]; //energies.
   Floating lnE[100];
   Floating CS[100];//cross sections.
+  //---------------------------------------------//
   const Floating alpha=1.0/137;
   Floating md;//deuteron mass.
   const Floating Edisplace_deuteron = 10 * eV;//displacement energy for deuteron is 10 eV.
@@ -116,6 +147,7 @@ private:
   
 };
 
+  
 template <typename Floating>
 Floating T3ElasticStrongIonIon<Floating>::GetCS(Floating Tls, PDG_t incPDG, PDG_t targetPDG/*deuteronPDG*/,
                                                 ParticleTable & aParticleTable) const
@@ -136,6 +168,7 @@ Floating T3ElasticStrongIonIon<Floating>::GetCS(Floating Tls, PDG_t incPDG, PDG_
   {
     printf("***ERROR: T3ElasticStrongIonIon::GetCS() Out of energy range!!!");
   }
+
   return cs;
 }
 
@@ -221,6 +254,7 @@ auto T3ElasticStrongIonIon<Floating>::GetFS(T3LorentzVector<Floating> const &p, 
   T3ThreeVector<Floating> Pcm = InitMomentum*coef;
   const Floating xy=Pcm.x()*Pcm.y(), xz=Pcm.x()*Pcm.z(), yz=Pcm.y()*Pcm.z();
   const Floating x2=Pcm.x()*Pcm.x(), y2=Pcm.y()*Pcm.y(), z2=Pcm.z()*Pcm.z();
+  
   T3ThreeVector<Floating> e1, e2, e3;
   if(Pcm.x() < Pcm.y())
   {

@@ -1,8 +1,40 @@
+//
+// ****************************************************************
+// * TPT License and Disclaimer                                   *
+// *                                                              *
+// * The TPT Software  is  copyright  of the Copyright Holders of *
+// * the TPT CFAR-VNIIA group. It is provided under the terms and *
+// * conditions of  the Software License  (ROSPATENT 2014611928). *
+// *                                                              *
+// * This code is  NOT  an open code. It is distributed in a form *
+// * of compiled libraries. The code implementation is the result *
+// * of the  scientific and technical work of the CFAR-VNIIA  TPT *
+// * Scientific Group. By using or distributing  the TPT software *
+// * (or any work based on the software) you agree to acknowledge *
+// * its use  in  resulting scientific publications, and indicate *
+// * your acceptance of all terms of the TPT Software License.    *
+// ****************************************************************
+//
+// *** By opening this file you break the TPT License Agreement ***
+//
+
+// ---------------------------------------------------------------------------
+//  In this file there is a d-d elastic scattering approximation
+//  from /users/ALPHA_ELAST/FINAL_CORRECT_dd.
+// ---------------------------------------------------------------------------
+
+// #define debug
+// #define pdebug
+
 #include "T3R_DDCS.hh"
 #include <cmath>
 #include <map>
 
 #include "unistd.h"
+
+//********************************************************************************************************************//
+//This is a file for writing and reading |t| and partial sums for each energy for d-d elastic scattering approximation//
+//********************************************************************************************************************//
 
 namespace t3 {
 
@@ -27,6 +59,45 @@ void T3R_DDCS::Fill()
   const double deltalncosSubBins=deltalncos/SubBin3;
   for(int b=0; b<Bin3; ++b)
     for(int sb=0; sb<SubBin3+1; ++sb) SubBinsCS.at(b).at(sb)=lncos.at(b)+sb*deltalncosSubBins;
+
+  /*
+  std::cout<<"Bin2="<<Bin2<<" Bin3="<<Bin3<<std::endl;
+  std::cout<<"Emin="<<Emin<<" Emax="<<Emax<<std::endl;
+  std::cout<<"deltalnE="<<deltalnE<<std::endl;
+  std::cout<<"lnE:"<<std::endl;
+  for(int b=0; b<Bin2; ++b) std::cout<<lnE.at(b)<<" ";
+  std::cout<<std::endl;
+  std::cout<<"E:"<<std::endl;
+  for(int b=0; b<Bin2; ++b) std::cout<<exp(lnE.at(b))<<" ";
+  std::cout<<std::endl;
+
+  std::cout<<"\nkb="<<kb<<" std::log(1.0)="<<std::log(1.0)<<" std::log(kb)="<<std::log(kb)
+           <<" (std::log(1.0)-std::log(kb))="<<(std::log(1.0)-std::log(kb))
+           <<" deltalncos="<<deltalncos
+           <<" deltalncosSubBins="<<deltalncosSubBins
+           <<std::endl;
+  
+  std::cout<<"lncos:"<<std::endl;
+  for(int b=0; b<Bin3+1; ++b) std::cout<<lncos.at(b)<<" ";
+  std::cout<<std::endl;
+  std::cout<<"Check 1-cos(theta_cm):   ";
+  for(int b=0; b<Bin3+1; ++b) std::cout<<std::exp(lncos.at(b))<<" ";
+  std::cout<<std::endl;
+  std::cout<<"Check SubBinsCS:"<<std::endl;
+  for(int b=0; b<Bin3; ++b)
+  {
+    std::cout<<std::exp(lncos.at(b))<<":   ";
+    std::array<double, SubBin3+1> sbarray=SubBinsCS.at(b);
+    for(int sb=0; sb<SubBin3+1; ++sb)
+    {
+      if(sb==0)
+        std::cout<<"_"<<std::exp(sbarray.at(sb))<<" ";
+      else
+        std::cout<<std::exp(sbarray.at(sb))<<" ";
+    }
+    std::cout<<std::endl;
+  }
+  */
   
 //iterate through all energies:
   for(int i=0; i<Bin2; ++i)
@@ -45,8 +116,27 @@ void T3R_DDCS::Fill()
              <<" tm="<<tm<<std::endl;
     
     for(int b=1; b<Bin3+1; ++b)
-    { 
+    {
+//WE SUM  PARTIAL SUMS FROM RIGHT TO LEFT, BECAUSE RUTHERFORD FUNCTION ~ 1/|t|^2,
+//AND TO SAVE (MORE ACCURATE CALCULATIONS) SMALL VALUES FROM THE BINS NEAR |t|=2*pcm^2,
+//WE SUM FROM RIGHT TO LEFT (from smaller values of dsigma/d|t| to bigger).
+//BUT WE DIVIDE THE BINS IN LOGARITHMIC SCALE FROM LEFT TO RIGHT, BECAUSE
+//the function is ~1/|t|^2 and it is big at |t|->0.      
       std::array<double, SubBin3+1> subbinscs=SubBinsCS.at(Bin3-b);
+
+      /*
+      std::cout<<"Bin #"<<b<<" "<<std::exp(lncos.at(Bin3-b))<<" "<<std::exp(lncos.at(Bin3-b+1))
+               <<" pls2="<<pls2/GeV/GeV<<" pcm2="<<pcm2/GeV/GeV<<" tm="<<tm/GeV/GeV<<std::endl;
+      std::cout<<"Check ln(1-cos(theta_cm))subbins:   ";
+      for(int sb=0; sb<SubBin3+1; ++sb) std::cout<<subbinscs.at(SubBin3-sb)<<" ";
+      std::cout<<std::endl;
+      std::cout<<"Check 1-cos(theta_cm) subbins:   ";
+      for(int sb=0; sb<SubBin3+1; ++sb) std::cout<<std::exp(subbinscs.at(SubBin3-sb))<<" ";
+      std::cout<<std::endl;
+      std::cout<<"Check |t| subbins:   ";
+      for(int sb=0; sb<SubBin3+1; ++sb) std::cout<<tm*std::exp(subbinscs.at(SubBin3-sb))/GeV/GeV<<" ";
+      std::cout<<std::endl;       
+      */      
       for(int sb=0; sb<SubBin3; ++sb)
       {
         const double tl=tm*std::exp(subbinscs.at(SubBin3-sb-1));
@@ -55,10 +145,35 @@ void T3R_DDCS::Fill()
         double dright=tr*GetdSigmadt(std::exp(lnE.at(i)), tr);
         double dlncos=deltalncosSubBins;//=dx
         const double dsigmai=(dleft+dright)*dlncos/2;
-        psumb+=dsigmai;    
+        psumb+=dsigmai;
+        /*
+        std::cout<<"---------------"<<std::endl;
+        std::cout<<"INDEX="<<SubBin3-sb-1<<" "<<SubBin3-sb<<std::endl;
+        std::cout<<"SubBin #"<<sb<<" "<<subbinscs.at(SubBin3-sb-1)<<" "<<subbinscs.at(SubBin3-sb)
+                 <<std::endl;
+        */
+                 
+        /*
+                 <<" "<<std::exp(subbinscs.at(SubBin3-sb-1))<<" "<<std::exp(subbinscs.at(SubBin3-sb))
+                 <<" tl="<<tl/GeV/GeV<<" tr="<<tr/GeV/GeV<<" ds/dt_l="<<GetdSigmadt(std::exp(lnE.at(i)),tl)/mbarn*GeV*GeV
+                 <<" ds/dt_r="<<GetdSigmadt(std::exp(lnE.at(i)),tr)/mbarn*GeV*GeV
+                 <<" dleft="<<dleft/mbarn<<" dright="<<dright/mbarn<<" dlncos="<<dlncos
+                 <<" dsigmai="<<dsigmai/mbarn<<" ps="<<psumb/mbarn<<std::endl;
+        */
+        
+        //exit(0);
+        
       }
+      //BECAUSE THE PARTICLES ARE EQUAL (WE CAN NOT TELL THE INCIDENT PARTICLE FROM THE SCATTERED)
+      //WE GET THE RANDOM VALUE OF |t| from |t|_{min} to |t|_{m}=2*pcm^2 (NOT FROM |t|_{min} to |t|_{max}=4*pcm^2).
+      //THIS WILL WILL BE |t| of the particle flying forward (from 0 to 90 grad) in CM and u=-2*m_D*Tls-t.
+      //THE LS MOMENTUM OF THE OTHER PARTICLE (from 90 to 180 grad) CAN BE FOUND FROM THE ENERGY CONSERVATION LAW.
       Fk.at(i).at(b)=psumb;
+
+      //exit(0);
+      
     }
+    //exit(0);
   }
 
 //**************************************************************************//
@@ -69,7 +184,15 @@ void T3R_DDCS::Fill()
     const double pls2 = Tls*(2*md+Tls);
     const double pcm2 = pls2/(2.+2.*std::sqrt(1.+pls2/md2));//rat=md/md=1. rat2=1 for D-D.
     const double tm =   2*pcm2;
-  
+    ///\\\///CS.at(i)=2*(GetRutherfordDDCSIntegral(std::exp(lnE.at(i)), tmin, kb*tm)+Fk.at(i).at(Bin3));
+//The cross section for ElasticStrongIonIon process.
+//It is from 10^(-3)*2*pcm^2 to 2*pcm^2.
+//It corresponds to the difference between green Rutherford curve
+//and the red approximation curve.
+
+//2 - ?
+//Think it is necessary here, because the particles are equal and differential cross section
+//is symmetric at |t|m=2*pcm^2:    
     CS.at(i)=2*Fk.at(i).at(Bin3);
   }
   std::vector<T3double> argE;
@@ -83,40 +206,90 @@ void T3R_DDCS::Fill()
     //ecs.push_back(new T3R_node(argE.at(i), argCS.at(i)));
   }
   T3TabulatedCS tcs(argE,argCS);
-  std::cout<<"tcs: "<<" size="<<tcs.Get_size()<<std::endl;
-  //std::cout<<tcs<<std::endl;
-
-  std::cout<<"STEP #1"<<std::endl;
-  //sleep(3);
+  //std::cout<<"tcs: "<<" size="<<tcs.Get_size()<<std::endl;
   ecs=T3R_RW(tcs, 1, 2);
 
-  std::cout<<"PRINT ecs: size="<<ecs.size()<<std::endl;
-  std::cout<<ecs<<std::endl;
+  //std::cout<<"PRINT ecs: size="<<ecs.size()<<std::endl;
+  //std::cout<<ecs<<std::endl;
+  //exit(0);
+  
+  
+//**************************************************************************//
+
+  /*
+  std::cout<<"Check Fk before normalization:"<<std::endl;
   for(int i=0; i<Bin2; ++i)
   {
+    std::cout<<"E="<<std::exp(lnE.at(i))/MeV<<" MeV"<<std::endl;
+    for(int b=0; b<Bin3+1; ++b) std::cout<<Fk.at(i).at(b)<<" ";
+    std::cout<<std::endl;
+  }
+  std::cout<<std::endl;
+  */
+
+//--------------------------------------------------------------------------//
+//Normalize partial sums:                                                   //
+//--------------------------------------------------------------------------//  
+  for(int i=0; i<Bin2; ++i)
+  {
+    /*
+    std::cout<<"Before i="<<i<<" :"<<std::endl;
+    for(int b=0; b<Bin3+1; ++b) std::cout<<Fk.at(i).at(b)<<" ";
+    std::cout<<std::endl;
+    std::cout<<"Last before="<<Fk.at(i).at(Bin3)<<std::endl;
+    */
     int count=0;
     for(int b=0; b<Bin3+1; ++b)
     {
       Fk.at(i).at(b)/=Fk.at(i).at(Bin3);
       ++count;
     }
+    /*
+    std::cout<<"Last after="<<Fk.at(i).at(Bin3)<<" count="<<count<<std::endl;
+    std::cout<<"After i="<<i<<" :"<<std::endl;
+    for(int b=0; b<Bin3+1; ++b) std::cout<<Fk.at(i).at(b)<<" ";
+    std::cout<<std::endl;
+    */
   }
+//--------------------------------------------------------------------------//
+//End of normalize partial sums.                                            //
+//--------------------------------------------------------------------------//
+
+
+
+  /*
+  std::cout<<"Check Fk after normalization:"<<std::endl;
+  for(int i=0; i<Bin2; ++i)
+  {
+    std::cout<<"E="<<std::exp(lnE.at(i))/MeV<<" MeV"<<std::endl;
+    for(int b=0; b<Bin3+1; ++b) std::cout<<Fk.at(i).at(b)<<" ";
+    std::cout<<std::endl;
+  }
+  std::cout<<std::endl;
+  */
 
   tps.resize(0);
   for(int i=0; i<Bin2; ++i)
   {
+    /*
+    std::cout<<"Bin #"<<i<<" E="<<std::exp(lnE.at(i))/MeV<<std::endl;
+    Energy.at(i)=std::exp(lnE.at(i));
+    std::cout<<"Fk.at("<<i<<"):   ";
+    for(int b=0; b<Bin3+1; ++b) std::cout<<Fk.at(i).at(b)<<" ";
+    std::cout<<std::endl;
+    */
     std::array<double, _numpoint> PSFk{0.0};
     for(int j=0; j<_numpoint; ++j) PSFk.at(j)=Fk.at(i).at(j+1);
+    /*
+    std::cout<<"Check PSFk.at("<<i<<"):"<<std::endl;
+    for(int b=0; b<_numpoint; ++b) std::cout<<PSFk.at(b)<<" ";
+    std::cout<<std::endl;
+    */
     T3NSGangular_RWnode newnode =
       T3NSGangular_RWnode(std::exp(lnE.at(i)), PSFk);
     tps.push_back(newnode);
   }
   trw.push_back(tps);
-  std::cout<<"End of Fill():"<<std::endl;
-  std::cout<<" trw size="<<trw.size()<<" tps size="<<tps.size()<<std::endl;
-  //std::cout<<"tps: \n"<<tps<<std::endl;
-  std::cout<<"trw: \n"<<trw<<std::endl;
-  std::cout<<"END ecs: "<<ecs.size()<<std::endl;
 }
 
 //returns the differential cross section from D-D approximation in inner units
@@ -134,6 +307,11 @@ double T3R_DDCS::GetdSigmadt(double Tls/*LS kinetic energy of the incident deute
     ////       <<tmax/2/GeV/GeV<<" tmax="<<tmax/GeV/GeV<<std::endl;
     return 0.0;
   }
+/////////////////////////
+  //if(|t|>2*pcm^2) |t|=4*pcm^2-|t|.
+  //D-D scattering of equal particles=>dsigma/d|t| is symmetric at 2*pcm^2=>
+  //to get differential cross section at |t|>2*pcm^2 we should make
+  //if(|t|>2*pcm^2) |t|=4*pcm^2-|t| and dsigma/d|t| will be dsigma/d|t|(4*pcm^2-|t|).
   if(t>2*pcm2) t=tmax-t;
   //Ar0 without hc
   const double Ar0=md / 137. * std::sqrt(10 * M_PI / pcm2);
@@ -147,6 +325,13 @@ double T3R_DDCS::GetdSigmadt(double Tls/*LS kinetic energy of the incident deute
 //---------------------------------------------------------------------------  
   const double alpha=1.0/137.0;
   const double pcm=std::sqrt(pcm2);
+// ////////////////////////////////////////////////
+  //Here is an error: Ecm - CM energy of the inc particle or the reduced particle:
+  //1) if inc particle - Ecm=std::sqrt(md2+pcm2)
+  //2) if reduced particle - Ecm=std::sqrt(md2/4+pcm2)
+// ////////////////////////////////////////////////
+  //????????????????????? md2 - ? OR md2/4.
+  //It does not matter. Visually the approximations do not differ.
   const double Ecm=std::sqrt(md2+pcm2);
   const double CA=std::cos(alpha*Ecm/pcm*std::log(tg2));
 //---------------------------------------------------------------------------  
@@ -186,7 +371,28 @@ double T3R_DDCS::GetdSigmadt(double Tls/*LS kinetic energy of the incident deute
   const double term2=term21+term22;
   const double hc = 0.2 * GeV * fm;//=200 MeV*fm.  
   double dsigmadt = hc*hc*(term1*term1+term2*term2);// =/mbarn
+  //In approximation Ar0=amd/137.*SQRT(10*pi/pcm2).
+  //10 is because the result is in fm^2
+  //and 1fm^2=10mbarn, and to convert the result in mbarn/GeV^2 from fm^2/mbarn,
+  //we multiply pi by 10. That is why, to get the result not in mbarn/GeV^2, but
+  //in inner units, we should divide the result of approximation by 10.
   dsigmadt/=10;//because std::sqrt(10 * M_PI / pcm2);.
+
+  /*
+  std::cout<<"md="<<md/GeV<<" md2="<<md2/GeV/GeV<<" Tls="<<Tls/MeV<<" MeV |t|="<<t/GeV/GeV<<" GeV^2"
+           <<" pls2="<<pls2/GeV/GeV<<" GeV^2"<<" pcm2="<<pcm2/GeV/GeV<<" GeV^2"
+           <<" tmax="<<tmax/GeV/GeV<<" GeV^2"<<" Ar0="<<Ar0<<" pcm4="<<pcm4/GeV/GeV<<" GeV^2"
+           <<" sin2="<<sin2<<" cos2="<<cos2<<" tg2="<<tg2<<" alpha="<<alpha
+           <<" pcm="<<pcm/GeV<<" GeV"<<" Ecm="<<Ecm/GeV<<" GeV"<<" CA="<<CA
+           <<" Ar="<<Ar<<" Tcm="<<Tcm/MeV<<" MeV"<<" s="<<s/GeV/GeV<<" GeV^2"<<" g="<<g
+           <<" As="<<As<<" Atu="<<Atu<<" fs="<<phases<<" ftu="<<phasetu<<" dtg="<<dtg<<" tg2t="<<tg2t
+           <<" s="<<s/GeV/GeV<<" termAtu="<<termAtu<<" |t|="<<t/GeV/GeV
+           <<" t11="<<term11*GeV*GeV<<" t12="<<term12*GeV*GeV
+           <<" t21="<<term21*GeV*GeV<<" t22="<<term22*GeV*GeV
+           <<" t1="<<term1*GeV*GeV<<" t2="<<term2*GeV*GeV
+           <<" sum="<<(term1*term1+term2*term2)*GeV*GeV*GeV*GeV<<std::endl;
+  */           
+  ////std::cout<<"CS: dsigma/d|t|="<<dsigmadt/mbarn*GeV*GeV<<" mbarn/GeV^2"<<std::endl;
   return dsigmadt;
 }
 

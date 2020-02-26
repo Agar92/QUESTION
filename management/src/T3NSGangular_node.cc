@@ -42,6 +42,10 @@ T3NSGangular_node::T3NSGangular_node(const T3NSGangular_RWnode& rwnode,
                                      Xmin(xmin), Xmax(xmax)
 {
   std::vector<T3LorentzVector<FloatingType>> vlv = rwnode.CalcXYZ(Xmin,Xmax);
+
+  //std::cout<<"T3NSGangular_node::T3NSGangular_node():"<<std::endl;
+  //std::cout<<"Xmin="<<Xmin<<" Xmax="<<Xmax<<std::endl;
+  //sleep(1);
   
   for(size_t ind =0; ind < _num_point; ++ind)
   {

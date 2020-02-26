@@ -42,13 +42,21 @@ public:
     D2Plusp_t    = (mp + mt)*(mp + mt);
     D2Minusp_t   = (mp - mt)*(mp - mt);
     T3NSGangular_RW rw;  
-    constexpr int tgZ = 1;//target deuteron Z=1
-    constexpr int tgA = 2;//target deuteron A=2
-    constexpr int sPDG = 2112;//reaction product=n+3He//this is a neutron from a reaction product.
-    constexpr int incZA = 1002;//1000*Z+A//inc deuteron
-    constexpr auto rid = "50";//MT index of inelastic reaction in ENDF
-    rw.load_binary(tgZ, tgA, rid, sPDG, incZA);//load the data from the binary file.
+    constexpr int tgZ = 1;
+    constexpr int tgA = 2;
+    constexpr int sPDG = 2112;
+    constexpr int incZA = 1002;
+    constexpr auto rid = "50";
+    
+    ///rw.load_binary(tgZ, tgA, rid, sPDG, incZA);//load the data from the binary file.
+    rw.load_binary(std::string("tpt/include/InelasticDDPS_for_nhe3_channel.dat"));
+
     T3NSGangular_RWrecord rwrec=rw.at(0);
+    //std::cout<<"Inelastic rwrec:"<<std::endl;
+    //sleep(2);
+    //std::cout<<rwrec<<std::endl;
+    //exit(0);
+        
     for(int i=0; i<rwrec.size(); ++i)
     {
       for(int j=0; j<127; ++j) rwrec.at(i).Set_V(j+1, rwrec.at(i).Get_V(j+1)*rwrec.at(i).Get_V(j+1));
@@ -99,7 +107,6 @@ public:
     Floating res=0.142*t1/t2/t3;
     return res;
   }
-
   inline Floating C2pt(Floating Tls) const
   {
     Floating t1=(1.0+pow(Tls/0.047, 0.855));
@@ -109,7 +116,6 @@ public:
     Floating res=0.08*t1/t2/t3/t4;
     return res;
   }
-
   inline Floating C4nhe3(Floating Tls) const
   {
     Floating t1=0.414e-3*pow(Tls/0.11e-3, 0.0543);
@@ -118,7 +124,6 @@ public:
     Floating res=t1*t2*t3;
     return res;
   }
-
   inline Floating C4pt(Floating Tls) const
   {
     Floating t1=0.361e-3*pow(Tls/0.16e-3, 0.034);
@@ -127,7 +132,6 @@ public:
     Floating res=t1*t2*t3;
     return res;
   }
-
   inline Floating C6nhe3(Floating Tls) const
   {
     Floating t1=0.15e-6*pow(Tls, 0.13);
@@ -137,7 +141,6 @@ public:
     Floating res=t1*t2*t3*t4;
     return res;
   }
-  
   inline Floating C6pt(Floating Tls) const
   {
     Floating t1=0.185e-6*pow(Tls, 0.0785);
@@ -146,13 +149,11 @@ public:
     Floating res=t1*t2*t3;
     return res;
   }
-  
   inline Floating C0nhe3(Floating Tls) const
   {
     Floating res=0.5-C2nhe3(Tls)/3-C4nhe3(Tls)/5-C6nhe3(Tls)/7;
     return res;
   }
-  
   inline Floating C0pt(Floating Tls) const
   {
     Floating res=0.5-C2pt(Tls)/3-C4pt(Tls)/5-C6pt(Tls)/7;
@@ -179,9 +180,9 @@ private:
   Floating D2Minusn_he3;
   Floating D2Plusp_t;
   Floating D2Minusp_t;
-  T3Inelasticdd_DB db;
-  const Floating Xmin=-1.0;
-  const Floating Xmax= 1.0;
+  T3Inelasticdd_DB db;//{-1.0, 1.0};
+  const Floating Xmin=-1.0;//cos(M_PI)=-1
+  const Floating Xmax= 1.0;//cos(0)=1
   
 };
 
@@ -220,6 +221,7 @@ Floating T3Inelasticdd<Floating>::GetCS(Floating Tls, PDG_t incPDG, MatID_t matI
   }
   return cs;
 }
+
 
 template <typename Floating>
 Floating T3Inelasticdd<Floating>::GetCosCMFromDDInelasticChannelsApproximationFunctions(PDG_t secondaryPDG, unsigned int &generator_seed/*the particle random generator seed*/,
@@ -316,7 +318,6 @@ auto T3Inelasticdd<Floating>::GetFS(T3LorentzVector<Floating> const &p, PDG_t in
       const Floating R = RND01(generator_seed);
       if(0.0<=R && R<csnhe3/cstot)       outPDG1 = PDG_t(2112);
       else if(csnhe3/cstot<=R && R<=1.0) outPDG1 = PDG_t(2212);
-      
       T3ThreeVector<Floating> InitMomentum = p.Vect();
       const Floating plsinc=InitMomentum.R();
       const Floating Elsinc=sqrt(md2+plsinc*plsinc);
@@ -381,6 +382,7 @@ auto T3Inelasticdd<Floating>::GetFS(T3LorentzVector<Floating> const &p, PDG_t in
         prodm1=mp;
         prodm2=mt;
       }
+      
       const Floating pcmfin=sqrt(num)/2/sqrt(s);      
       const Floating ss=pcmfin*sinThetaCM*sinPhi, sc=pcmfin*sinThetaCM*cosPhi;
       T3ThreeVector<Floating> Pcmfin;

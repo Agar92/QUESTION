@@ -34,6 +34,7 @@ public:
   GetCS(Floating Tls, PDG_t incPDG, MatID_t matID,
         ParticleTable & aParticleTable, MaterialTable & aMaterialTable) const;
 
+
   inline Floating GetRNDCosThetaCMInEqualRutherford(
                   PDG_t incPDG,
                   Floating Tls/*LS kinetic energy of the inc particle*/,
@@ -77,9 +78,9 @@ Floating T3ElasticEMIonIon<Floating>::GetCS(Floating Tls, PDG_t incPDG, PDG_t ta
   const Floating M=aParticleTable.GetMass(targetPDG);// M
   const int z=aParticleTable.GetZ(incPDG);           // z
   const int Z=aParticleTable.GetZ(targetPDG);        // Z
-  const Floating Elsinc = m+Tls;
-  const Floating s      = m*m+2*Elsinc*M+M*M;
-  const Floating mr     = m*M/sqrt(s);
+  const Floating Elsinc = m+Tls;//LS full energy of the inc particle.
+  const Floating s      = m*m+2*Elsinc*M+M*M;//s mandelstahm variable.
+  const Floating mr     = m*M/sqrt(s);//invariant mass.
   const Floating pls2   = Tls*(2*m+Tls);
   const Floating rat    = m/M;
   const Floating rat2   = rat*rat;
@@ -94,9 +95,10 @@ Floating T3ElasticEMIonIon<Floating>::GetCS(Floating Tls, PDG_t incPDG, PDG_t ta
   if(targetPDG == deuteronPDG)   tmin=2*Edisplace_deuteron*M;
   else if(targetPDG == titanPDG) tmin=2*Edisplace_titan*M;
   if(tmax<=tmin)
-  {
+  { 
     return 0.0;
   }
+  
   int channel=-1;
   Floating cs=0.0;
   if(incPDG == targetPDG)
@@ -116,8 +118,9 @@ Floating T3ElasticEMIonIon<Floating>::GetCS(Floating Tls, PDG_t incPDG, PDG_t ta
       else
       {
         channel=2;
+
         if(1.0e-3*tm<=tmin)
-        { 
+        {          
           return 0.0;
         }
                 
@@ -191,10 +194,11 @@ Floating T3ElasticEMIonIon<Floating>::GetRNDCosThetaCMInEqualRutherford(
   const Floating spin=aParticleTable.GetSpin(incPDG);
   const bool cond=(fmod(spin,1.0))<1.0e-7;
   const int SIGN=(cond)?1:-1;
+  
   if(tM<=tmin)
   { 
     printf("*** ERROR: T3ElasticEMIonIon::GetRNDCosThetaCMInEqualRutherford(): tM=%f <= tmin=%f", tM, tmin);
-    return 1.0;
+    return 1.0;//cos(theta_cm)=1 => theta_cm=0.
   }
   if(incPDG == deuteronPDG)
   {
@@ -204,25 +208,25 @@ Floating T3ElasticEMIonIon<Floating>::GetRNDCosThetaCMInEqualRutherford(
       printf("***ERROR: Tls=%f < 10 keV and tM=%f != tm=%f", Tls, tM, tmax/2);
   }
   
-  if(CS1<0.0 || CS2<0.0) printf("***ERROR: CS1=%f CS2=%f\n",CS1,CS2);  
+  if(CS1<0.0 || CS2<0.0) printf("***ERROR: CS1=%f CS2=%f\n",CS1,CS2);
   int channel=-1;
   Floating CSSum=CS1+CS2;
   Floating R1ar=R1*CSSum;
   if(R1ar<=CS1)             channel=1;
   else if(R1ar<=(CS1+CS2))  channel=2;
-  Floating t=-1.0;//=|t|.
-  if(channel==1)     //channel 1
+  Floating t=-1.0;
+  if(channel==1)
   {
-      const Floating tR=(1.0-R2)/tmin+R2/tM;
-      t=1.0/tR;//=random |t|.
+     const Floating tR=(1.0-R2)/tmin+R2/tM;
+      t=1.0/tR;
   }
-  else if(channel==2)//channel 2
+  else if(channel==2)
   {
       const Floating tR=(1.0-R2)/(tmax-tmin)+R2/(tmax-tM);
-      t=tmax-1.0/tR;//=random |t|.
+      t=tmax-1.0/tR;
   }
-  const Floating tm=2*pcm2;//=|t|m.
-  const Floating CosThetaCM=1.0-t/tm;//random cos(theta_cm).
+  const Floating tm=2*pcm2;
+  const Floating CosThetaCM=1.0-t/tm;
   return CosThetaCM;
 }
 
@@ -260,7 +264,6 @@ auto T3ElasticEMIonIon<Floating>::GetFS(T3LorentzVector<Floating> const & p, PDG
   {
     if(csBorderDataFS[init+i]<=raR) isotopePDG = aMaterialTable.GetIsotopes(matID,i);
   }
-  
   const Floating M=aParticleTable.GetMass(isotopePDG);//mass of the target ion.
   const int z=aParticleTable.GetZ(incPDG);            //z
   const int Z=aParticleTable.GetZ(isotopePDG);        //Z
@@ -315,7 +318,7 @@ auto T3ElasticEMIonIon<Floating>::GetFS(T3LorentzVector<Floating> const & p, PDG
   e3.Unit();
   const Floating R1=RND01(generator_seed);
   const Floating R2=RND01(generator_seed);
-  Floating CosThetaCM=0.0;//random CosThetaCM.
+  Floating CosThetaCM=0.0;
   int channel=-1;
   if(incPDG == isotopePDG)
   {
@@ -341,11 +344,13 @@ auto T3ElasticEMIonIon<Floating>::GetFS(T3LorentzVector<Floating> const & p, PDG
     }
   }
   else
-  { //=random |t|:
-    Floating t=tmin/(1.0-R1*(1.0-tmin/tmax));//=|t|.
-    CosThetaCM=1.0-t/tm;//random cos(theta_cm).
+  { 
+    Floating t=tmin/(1.0-R1*(1.0-tmin/tmax));
+    CosThetaCM=1.0-t/tm;
   }
+  
   tr=CosThetaCM;
+
   const Floating phi=2*M_PI*RND01(generator_seed);
   const Floating cosPhi=cos(phi), sinPhi=sin(phi);
   const Floating SinThetaCM=sqrt(1.0-CosThetaCM*CosThetaCM);
@@ -359,7 +364,6 @@ auto T3ElasticEMIonIon<Floating>::GetFS(T3LorentzVector<Floating> const & p, PDG
   Pcmfin.SetZ(e1.z()*pcminc*CosThetaCM+e2.z()*ss+e3.z()*sc);
   T3ThreeVector<Floating> Vcm=InitMomentum/(Elsinc+M);
   const Floating E1cmfin=sqrt(m*m+pcminc*pcminc);
-  ////const Floating E2cmfin=sqrt(M*M+pcminc*pcminc);
   const Floating AbsVcm=Vcm.R();
   const Floating gamma=1.0/std::sqrt(1-AbsVcm*AbsVcm);
   T3ThreeVector<Floating> ParallelProjection=(e1*Pcmfin)*e1;
@@ -391,6 +395,7 @@ auto T3ElasticEMIonIon<Floating>::GetFS(T3LorentzVector<Floating> const & p, PDG
     printf("%d %d\n", outPDG1, outPDG2);
     printf("%i\n", channel);
   }
+  
   return Four<Floating>(outPDG1, outPDG2, outP1, outP2);
 }
   

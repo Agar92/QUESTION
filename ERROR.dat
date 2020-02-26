@@ -1,0 +1,15 @@
+
+
+OPENACC IS DEFINED, CUDA IS DEFINED
+
+
+size of DataHolder is ~0.0019564GB, size of d is ~0.0019564GB
+##################################################
+push=500000 INJ=500000 N=99999999
+##################################################
+Failing in Thread:1
+call to cuStreamSynchronize returned error 719: Launch failed (often invalid pointer dereference)
+
+Failing in Thread:1
+call to cuMemFreeHost returned error 719: Launch failed (often invalid pointer dereference)
+

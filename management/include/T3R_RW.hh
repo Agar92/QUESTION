@@ -1,4 +1,28 @@
 #pragma once
+
+//
+// ****************************************************************
+// * TPT License and Disclaimer                                   *
+// *                                                              *
+// * The TPT Software  is  copyright  of the Copyright Holders of *
+// * the TPT CFAR-VNIIA group. It is provided under the terms and *
+// * conditions of  the Software License  (ROSPATENT 2014611928). *
+// *                                                              *
+// * This code is  NOT  an open code. It is distributed in a form *
+// * of compiled libraries. The code implementation is the result *
+// * of the  scientific and technical work of the CFAR-VNIIA  TPT *
+// * Scientific Group. By using or distributing  the TPT software *
+// * (or any work based on the software) you agree to acknowledge *
+// * its use  in  resulting scientific publications, and indicate *
+// * your acceptance of all terms of the TPT Software License.    *
+// ****************************************************************
+//
+//      ---------------- T2R_RW --------------------
+//   Created by Mikhail Kosov, June 2014 from T2NSG_RW.
+//  Class header for writing/reading of (h,anything) ENDF6 DB one isotope file
+// ---------------------------------------------------------------------------
+// Short description: Container for an isotope (n,h'g) Q-levels & E-nodes
+// ----------------------------------------------------------------------
 #ifndef T3R_RW_HH
 #define T3R_RW_HH
 
@@ -17,6 +41,20 @@ public:
   T3R_RW & operator=(const T3R_RW & right);
   ~T3R_RW();
 
+//---------------------------------------------------------------------//  
+//!!!  
+//This function saves D-D elastic scattering approximation
+//integral cross sections. Yet we chose 1-cos(theta_cm)=1.0e-3
+//to be the left border of (E,partial sums) Ox axis. To the
+//left from it, there is no difference between red
+//approximation and green Rutherford curve.
+//The right border is 1-cos(theta_cm)=1.0.
+//We sum partial sums from 1-cos(theta_cm)=1.0 to
+//1-cos(theta_cm)=1.0e-3 in a logarithmic scale.
+//The cross sections we write using this method are
+//The partial sum at 1-cos(theta_cm)=1.0e-3 values,
+//!!!So, they are not full elastic D-D integral cross sections.!!!  
+//!!!
   T3String default_file_Elastic_approx_e_cs( T3int targZ, T3int targA, T3int pZ, T3int pA) const;
 
   void save_binary_Elastic_approx_e_cs(T3int targZ, T3int targA, T3int pZ, T3int pA) const;
@@ -54,8 +92,10 @@ public:
   void SetZ(T3double Z)  {tgZ = Z;}                 // Put the A-parameter for CS=A+B/p
   void SetA(T3double A)  {tgA = A;}                 // Put the B-parameter for CS=A+B/p
 
-private:
   T3bool load_binary( const T3String& fname );      // Read binary table from file
+  
+private:
+  ///T3bool load_binary( const T3String& fname );      // Read binary table from file
 
   // Body
   std::vector<T3R_node*> ND;                      // Vector of pointers to (n,h'g) nodes

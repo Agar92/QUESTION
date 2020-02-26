@@ -1,5 +1,29 @@
 #pragma once
 
+//
+// ****************************************************************
+// * TPT License and Disclaimer                                   *
+// *                                                              *
+// * The TPT Software  is  copyright  of the Copyright Holders of *
+// * the TPT CFAR-VNIIA group. It is provided under the terms and *
+// * conditions of  the Software License  (ROSPATENT 2014611928). *
+// *                                                              *
+// * This code is  NOT  an open code. It is distributed in a form *
+// * of compiled libraries. The code implementation is the result *
+// * of the  scientific and technical work of the CFAR-VNIIA  TPT *
+// * Scientific Group. By using or distributing  the TPT software *
+// * (or any work based on the software) you agree to acknowledge *
+// * its use  in  resulting scientific publications, and indicate *
+// * your acceptance of all terms of the TPT Software License.    *
+// ****************************************************************
+//
+//
+// Created by Dmitry Savin 2014
+// The last revision:
+// ---------------------------------------------------------------------------
+// Short description:
+// ---------------------------------------------------------------------------
+
 #ifndef T3TABULATEDCS_HH
 #define T3TABULATEDCS_HH
 

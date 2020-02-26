@@ -33,8 +33,10 @@ private:
 template <typename Floating>
 Floating InelasticddCS<Floating>::GetDDInelasticIntegralCS(Floating Tls) const
 {
+  //CM kinetic energy is Tls/2 for D-D:
   const Floating Tcm = Tls / 2;
   const Floating rat = std::sqrt(Eg / Tcm);
+  //Gamow factor:
   const Floating g = std::exp(-0.5*rat);
   const Floating nhe31 = 1.0 + std::pow(2.52e-2/Tcm, 1.5);
   const Floating nhe32 = 1.0 + std::pow(4.7e-3/Tcm, 4.5);

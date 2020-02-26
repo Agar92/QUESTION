@@ -77,6 +77,10 @@ std::ifstream& T3NSGangular_RWnode::load_binary(std::ifstream& in_stream )
 
 T3LorentzVector<FloatingType> T3NSGangular_RWnode::CalcXYZ(size_t point_num, T3double xmin, T3double xmax) const
 {
+
+  //std::cout<<"T3NSGangular_RWnode::CalcXYZ() 1:"<<std::endl;
+  //std::cout<<" xmin="<<xmin<<" xmax="<<xmax<<std::endl;
+  
   if(0 < point_num && point_num <= _num_point)
     return ::CalcXYZ(xmin,xmax,Get_V(point_num - 1),Get_V(point_num),Get_V(point_num + 1),point_num);
   else
@@ -87,6 +91,10 @@ T3LorentzVector<FloatingType> T3NSGangular_RWnode::CalcXYZ(size_t point_num, T3d
 
 std::vector<T3LorentzVector<FloatingType>> T3NSGangular_RWnode::CalcXYZ(T3double xmin, T3double xmax) const
 {
+
+  //std::cout<<"T3NSGangular_RWnode::CalcXYZ() 2:"<<std::endl;
+  //std::cout<<" xmin="<<xmin<<" xmax="<<xmax<<std::endl;
+  
   std::vector<T3LorentzVector<FloatingType>> result;
   result.reserve(_num_point);
   for(size_t ind = 1; ind <= _num_point; ++ind )
@@ -109,12 +117,25 @@ namespace
 {
   T3LorentzVector<FloatingType> CalcXYZ(T3double xmin, T3double xmax, T3double p1, T3double p2, T3double p3,  size_t i2)
   {
+
+    //std::cout<<"T3NSGangular_RWnode::CalcXYZ() 3:"<<std::endl;
+    //std::cout<<" xmin="<<xmin<<" xmax="<<xmax<<std::endl;   
+    
     static const size_t   _num_point = T3NSGangular_RWnode::_num_point;
+    //the Ox range:
     const T3double DeltaX=xmax-xmin;
+    ///\\\///static const T3double dCosT= 2. / ( _num_point + 1 );
+    
     /*static */const T3double dCosT= DeltaX / ( _num_point + 1 );
+
+    //std::cout<<"### xmax="<<xmax<<" xmin="<<xmin
+    //         <<" DeltaX="<<DeltaX<<" (_num_point+1)="<<(_num_point+1)
+    //         <<" dCosT="<<dCosT<<std::endl;
+    
     static const T3double tCosT= 2 * dCosT;
     static const T3double dop= 1.E-6;
     static const T3double eql= 1.E-7;
+    ///\\\///const long double ct = i2 * dCosT - 1.;
     const long double ct = i2 * dCosT + xmin;
     T3LorentzVector<FloatingType> res(0., 0., 0., p2);
     if(std::fabs(p2-p1) < eql && std::fabs(p3-p2) < eql )
@@ -141,6 +162,17 @@ namespace
     const long double d23 = p2*p3*r23;
     const long double d13 = p1*p3*r13;
     const long double D   = d12 + d23 - d13;
+
+    /*
+    std::cout<<"Check  CalcXYZ():"<<std::endl;
+    std::cout<<"xmin="<<xmin<<" xmax="<<xmax<<std::endl;
+    std::cout<<"_num_point="<<_num_point<<std::endl;
+    std::cout<<"#DeltaX="<<DeltaX<<" dCosT="<<dCosT<<" tCosT="<<tCosT<<std::endl;
+    std::cout<<"i2="<<i2<<" ct="<<ct<<" exp(ct)="<<std::exp(ct)
+             <<" coscm="<<1.0-std::exp(ct)<<std::endl;
+    */
+
+    
     if(std::fabs(D) < 1.E-13 * d13 || D == 0.)
     {
       long double a = ct;

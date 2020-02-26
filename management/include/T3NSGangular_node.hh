@@ -55,6 +55,15 @@ private:
   T3double c[_num_point];
   T3double pr;
   T3double sl;
+  //it is necessary for using this class for different partial sums
+  //with different xmin and xmax.
+  //SDI had, as i understand, xmin=-1, xmax=1 ( cos(theta_cm) from -1 to 1 ).
+  //We with our elastic scattering approximation partial sums have now:
+  //ln(1-cos(theta_cm))_min=10^(-3) and
+  //ln(1-cos(theta_cm))_max=1.
+  //So, to use TPT2 quadratic interpolation, we must have a possibility
+  //to set different dY, dCosT, ct and fs.
+  //For this purpose, we use the following variables:
   T3double Xmin;
   T3double Xmax;
 };

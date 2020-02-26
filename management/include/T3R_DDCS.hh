@@ -1,5 +1,23 @@
 #pragma once
 
+//
+// ****************************************************************
+// * TPT License and Disclaimer                                   *
+// *                                                              *
+// * The TPT Software  is  copyright  of the Copyright Holders of *
+// * the TPT CFAR-VNIIA group. It is provided under the terms and *
+// * conditions of  the Software License  (ROSPATENT 2014611928). *
+// *                                                              *
+// * This code is  NOT  an open code. It is distributed in a form *
+// * of compiled libraries. The code implementation is the result *
+// * of the  scientific and technical work of the CFAR-VNIIA  TPT *
+// * Scientific Group. By using or distributing  the TPT software *
+// * (or any work based on the software) you agree to acknowledge *
+// * its use  in  resulting scientific publications, and indicate *
+// * your acceptance of all terms of the TPT Software License.    *
+// ****************************************************************
+//
+
 #ifndef T3R_DDCS_HH
 #define T3R_DDCS_HH
 
@@ -19,14 +37,25 @@
 
 namespace t3 {
 using namespace units;
+
+//--------------------------------------------------------------
+//  In this file there is a d-d elastic scattering approximation
+//  from /users/ALPHA_ELAST/FINAL_CORRECT_dd .
+//--------------------------------------------------------------
+
+//*************************************************************//
+//DESCRIPTION:                                                 //
+//This file is only for filling and Reading the database of    //
+//energy/partial sums of D-D elastic scattering in the energy  //
+//range 30 keV - 250 MeV                                       //
+//in /home/70-gaa/T3data/ on i7.                               //
+//*************************************************************//
   
 class T3R_DDCS
 {
 public:
   //constructor:
   T3R_DDCS();
-  //destructor:
-  ~T3R_DDCS(){std::cout<<"~T3R_DDCS(): "<<std::endl;}
   //these functions fills the (E, partial sums) table in T3_DATA:
   void Fill();
   
@@ -86,8 +115,27 @@ private:
   const double md=1.8756*GeV;
   const double md2=md*md;
   double tmin=2*md*Edisplace_deuteron;
+//------------------------------------------------------------------------------//
+//1. We found that the difference of elastic D-D scattering differential cross section
+//from Rutherford differential cross section at the scattering angle in CM
+//theta_cm=90 grad becomes 1% at Tls=30 keV
+//(Tls - the LS kineticenergy of the incident particle).
+//That is why we chose Tls_min=30 keV.
+//In /users/ALPHA_ELAST/CHECK_DD_APPROXIMATION_IN_TPROC/
+// /SEE_ALL_DIFF_CS/Make01_1_minus_costhetacm_axis/
+// /FIND_AT_WHICH_ENERGY_THE_DIFFERENCE_BETWEEN_RUTHERFORD_AND_APPROXIMATION_BEGINS
+//
+//At Tls<30 keV there is only Rutherford scattering.
+//2. We decided that the lower bound of 1-cos(theta_cm) is 1.0e-3.
+//In /users/ALPHA_ELAST/WORK_ON_FILLING_ELASTIC_DD_APPROXIMATION_PARTIAL_SUMS_DATABASE_IN_TPROC/
+// /FIND_Point_of_difference_e_dependency
+//------------------------------------------------------------------------------//
   const double kb=1.0e-3;//lower bound of 1-cos(theta_cm) axis for all energies.
+  
+//Changed:  
   double Emin=10.0 * keV;//30.0 * keV;//minimum LS kinetic energy (for elastic scattering, if less, than Rutherford scattering) of the inc deuteron.
+//End of changed.
+  
   double Emax=250.0 * MeV;//maximum LS kinetic energy (for elastic scattering) of the inc deuteron.
   double deltalncos;//the step of logarithmic 1-cos(theta_cm) axis
   double deltalnE;//the step of logarithmic lnE axis for energies in partial sums

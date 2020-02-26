@@ -40,6 +40,7 @@ public:
     D2Plusp_t    = (mp + mt)*(mp + mt);
     D2Minusp_t   = (mp - mt)*(mp - mt);
     T3NSGangular_RW rw;  
+    ///\\\///rw.load_binary("2mev.dat");
     constexpr int tgZ = 1;//target deuteron Z=1
     constexpr int tgA = 2;//target deuteron A=2
     constexpr auto sPDG = 2112;//reaction product=n+3He//this is a neutron from a reaction product.
@@ -78,6 +79,8 @@ public:
     }    
   }
 
+  //InelasticddFS(const & InelasticddFS)
+
   inline auto GetFS(T3LorentzVector<Floating> const &p, PDG_t incPDG, MatID_t matID, unsigned int & generator_seed,
                     Floating * csBorderDataFS, Floating & tr,
                     int ind, ParticleTable & aParticleTable, MaterialTable & aMaterialTable,
@@ -101,6 +104,8 @@ private:
   Floating D2Plusp_t;
   Floating D2Minusp_t;
   T3Inelasticdd_DB db;//{-1.0, 1.0};
+  //the Ox range for database with partial sums:
+  //xmin=-1.0   xmax=1.0:
   const Floating Xmin=-1.0;
   const Floating Xmax= 1.0;
 };
@@ -116,6 +121,7 @@ auto InelasticddFS<Floating>::GetFS(T3LorentzVector<Floating> const &p, PDG_t in
     generator_seed=Rand32(generator_seed);
     const Floating result=rndv(generator_seed);
     return result;
+    ///\\\///return static_cast<Floating>(Rand32(rnd_seed)) / 0xFFFFFFFF;
   };
   if(incPDG != deuteronPDG)
     return Four<Floating>(PDG_t(0), PDG_t(0), T3LorentzVector<Floating>(0.0,0.0,0.0,0.0), T3LorentzVector<Floating>(0.0,0.0,0.0,0.0));
@@ -196,15 +202,15 @@ auto InelasticddFS<Floating>::GetFS(T3LorentzVector<Floating> const &p, PDG_t in
       Floating num=-1.0;
       Floating prodm1=-1.0;
       Floating prodm2=-1.0;
-      if(outPDG1==PDG_t(2112))
-      { 
+      if(outPDG1==PDG_t(2112))//neutron.
+      { //(38.16) page 321 big PDG book.
         num = ( s - D2Plusn_he3 ) * ( s - D2Minusn_he3 );
         outPDG2=he3PDG;
         prodm1=mn;
         prodm2=mhe3;
       }
-      else if(outPDG1==PDG_t(2212))
-      { 
+      else if(outPDG1==PDG_t(2212))//proton.
+      { //(38.16) page 321 big PDG book.
         num = ( s - D2Plusp_t ) * ( s - D2Minusp_t );
         outPDG2=tritonPDG;
         prodm1=mp;
@@ -220,6 +226,7 @@ auto InelasticddFS<Floating>::GetFS(T3LorentzVector<Floating> const &p, PDG_t in
       T3ThreeVector<Floating> Vcm=InitMomentum/(Elsinc+md);
       const Floating Ecminc=sqrt(md2+pcminc*pcminc);
       const Floating E1cmfin=sqrt(prodm1*prodm1+pcmfin*pcmfin);
+      ///\\\///const Floating E2cmfin=sqrt(prodm2*prodm2+pcmfin*pcmfin);
       const Floating AbsVcm=Vcm.R();
       const Floating gamma=1.0/std::sqrt(1-AbsVcm*AbsVcm);
       T3ThreeVector<Floating> ParallelProjection=(e1*Pcmfin)*e1;
@@ -237,6 +244,7 @@ auto InelasticddFS<Floating>::GetFS(T3LorentzVector<Floating> const &p, PDG_t in
       outP2 = T3LorentzVector<Floating>(plsfin2.x(), plsfin2.y(), plsfin2.z(), Elsfin2);  
     }
   }
+  ////const T3LorentzVector<Floating> tot = outP1 + outP2;
   return Four<Floating>(outPDG1, outPDG2, outP1, outP2);
 }
   

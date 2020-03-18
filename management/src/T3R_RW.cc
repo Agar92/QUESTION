@@ -60,6 +60,7 @@ T3R_RW::T3R_RW(const T3TabulatedCS& tcs, T3int _tgZ, T3int _tgA):
   {
     push_back(new T3R_node(tcs.Get_E(ind), tcs.Get_xs(ind)));
   }
+  std::cout<<"PRINT: "<<std::endl;
   std::cout<<*this<<std::endl;
 }
 
@@ -114,9 +115,6 @@ void T3R_RW::save_binary(const T3String& fname) const // Write R DB to file
 {
   std::ofstream out_stream;
   out_stream.open(fname.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
-
-  std::cout<<"!!!fname="<<fname<<std::endl;
-  
   if(!out_stream.good())
   {
 #ifdef debug
@@ -138,13 +136,18 @@ void T3R_RW::save_binary(const T3String& fname) const // Write R DB to file
     ND[i]->save_binary( &out_stream );
   }
 
+  std::cout<<"VSIZE="<<vector_size<<std::endl;
+  
 }
 
 T3bool T3R_RW::load_binary(const T3String& fname) // Read NNG DB from file
 {
   std::ifstream in_stream;
+  std::cout<<"$#$fname="<<fname<<std::endl;
+  std::cout<<"$#$GGGGGGGG"<<std::endl;
   ///\\\///in_stream.open( fname.c_str(), std::ios::in | std::ios::binary/*| std::ios::trunc*/);
   in_stream.open( fname.c_str(), std::ifstream::in | std::ifstream::binary);
+  std::cout<<"$#$HHHHHHHH"<<std::endl;
   if(!in_stream.good())
   {
 #ifdef debug
@@ -154,8 +157,7 @@ T3bool T3R_RW::load_binary(const T3String& fname) // Read NNG DB from file
   }  
   unsigned int vector_size;
   // Now read Nodes
-  in_stream.read( (char*) &vector_size, sizeof( unsigned int ) );
-
+  in_stream.read( (char*) &vector_size, sizeof( unsigned int ) );  
 #ifdef debug
   T3cout<<"T3R_RW::load_binary: ND="<< vector_size <<", fname=" << fname << T3endl;
 #endif
@@ -182,18 +184,6 @@ T3bool T3R_RW::load_binary(const T3String& fname) // Read NNG DB from file
     ND.push_back(newND);
   }
   in_stream.close();
-
-
-  /*
-  std::cout<<"!!!!!!Check filename CS:"<<std::endl;
-  std::cout<<"fname="<<fname<<" size="<<fname.size()
-           <<"!!!!!!!"<<std::endl;
-
-  std::cout<<"HERE WE CHECK!"<<std::endl;
-  sleep(3);
-  */
-  
-  
   return true;
 }
 
@@ -229,6 +219,7 @@ T3String T3R_RW::default_file( T3int targZ, T3int targA,
 //!!!  
 T3String T3R_RW::default_file_Elastic_approx_e_cs(T3int targZ, T3int targA, T3int pZ, T3int pA) const
 {
+  std::cout<<"LLL"<<std::endl;
   std::map<T3int, T3String> names;
 //   names[1000*0 + 0] = "G";
 //   names[1000*0 + 1] = "N";
@@ -242,15 +233,23 @@ T3String T3R_RW::default_file_Elastic_approx_e_cs(T3int targZ, T3int targA, T3in
   T3String base="approx";
   T3String elastic="elastic";
 
+  std::cout<<"10"<<std::endl;
+  
   sprintf(buffer, "%s/xs/%s/elastic/T3%s_10%.3d%.3d0_%s.bin", T3data.c_str(),
           FolderName.c_str(), FolderName.c_str(), targZ, targA,
           base.c_str());
+
+  std::cout<<"11"<<std::endl;
 
   //!!!
   //Not more that 69 symbols in filename, otherwise in_stream.open
   //crashes with seg fault on line 120!!!
   //!!!
   T3String filename = T3String(buffer);
+  std::cout<<"#@%Check filename:"<<std::endl;
+  std::cout<<"#@%filename="<<filename<<" size="<<filename.size()<<std::endl;
+
+  std::cout<<"12"<<std::endl;
   
   return filename;  
 }

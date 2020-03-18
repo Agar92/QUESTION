@@ -53,8 +53,6 @@ public:
   T energy() const {return fE;}
 //returns the absolute value of 4-vector:  
   T R() const {return sqrt(fx*fx+fy*fy+fz*fz);}
-//returns the squared absolute value of 4-vector:  
-  T R2() const {return (fx*fx+fy*fy+fz*fz);}  
 //returns mass (m=SQRT(E^2-p^2)):  
   T m() const {return sqrt(fE*fE - fx*fx - fy*fy - fz*fz);}
 //makes 3-vector from 4-vector:

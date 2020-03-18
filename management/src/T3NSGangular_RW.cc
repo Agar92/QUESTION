@@ -2,7 +2,6 @@
 #include <map>
 
 #include "T3ParticleTable.h"
-#include "unistd.h"
 
 //#define debug
 
@@ -76,6 +75,10 @@ T3bool T3NSGangular_RW::load_binary( const T3String& fname )
 {
   T3bool result = false;
   std::ifstream in_stream;
+
+  std::cout<<"RRR: Check in T3NSGangular_RW.cc: "<<std::endl;
+  std::cout<<"RRR: fname="<<fname<<std::endl;
+  
   in_stream.open(fname.c_str(), std::ifstream::in | std::ifstream::binary);
   ///\\\///in_stream.open(fname.c_str(), std::ios::in | std::ios::binary);
   if(in_stream.good())
@@ -90,16 +93,6 @@ T3bool T3NSGangular_RW::load_binary( const T3String& fname )
 #endif
   }
   in_stream.close();
-
-  /*
-  std::cout<<"!!!!!!Check filename PS:"<<std::endl;
-  std::cout<<"fname="<<fname<<" size="<<fname.size()
-           <<"!!!!!!!"<<std::endl;
-
-  std::cout<<"HERE WE CHECK!"<<std::endl;
-  sleep(3);
-  */
-  
   return result;
 }
 
@@ -134,6 +127,10 @@ T3String T3NSGangular_RW::default_file(T3int tgZ, T3int tgA,
   const T3int secondaryZA=1000*secondaryZ+secondaryA;
   const T3String pname = pnames[secondaryZA];
 //End of Andrey added.
+
+  std::cout<<"pdg="<<pdg<<std::endl;
+  std::cout<<"secondaryZA="<<secondaryZA<<" Z="<<secondaryZ
+           <<" secondaryA="<<secondaryA<<std::endl;
   
   T3String incFolder = (incZA == 1) ? "n" : ("inc" + pnames[incZA]);
   sprintf(buffer, "%s/angular/%s/%s/%s/T3%sSGangular_10%.3d%.3d0.bin", T3data.c_str(),
@@ -142,6 +139,10 @@ T3String T3NSGangular_RW::default_file(T3int tgZ, T3int tgA,
   T3cout << "T3NSGangular_RW::default_file: " << buffer << T3endl;
 #endif
 
+//Check:
+  std::cout<<"Check: "<<buffer<<std::endl;
+//
+  
   return T3String(buffer);
 }
 

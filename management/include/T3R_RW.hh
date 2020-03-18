@@ -92,10 +92,8 @@ public:
   void SetZ(T3double Z)  {tgZ = Z;}                 // Put the A-parameter for CS=A+B/p
   void SetA(T3double A)  {tgA = A;}                 // Put the B-parameter for CS=A+B/p
 
-  T3bool load_binary( const T3String& fname );      // Read binary table from file
-  
 private:
-  ///T3bool load_binary( const T3String& fname );      // Read binary table from file
+  T3bool load_binary( const T3String& fname );      // Read binary table from file
 
   // Body
   std::vector<T3R_node*> ND;                      // Vector of pointers to (n,h'g) nodes

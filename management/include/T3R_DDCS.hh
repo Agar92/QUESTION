@@ -56,6 +56,8 @@ class T3R_DDCS
 public:
   //constructor:
   T3R_DDCS();
+  //destructor:
+  ~T3R_DDCS(){std::cout<<"~T3R_DDCS(): "<<std::endl;}
   //these functions fills the (E, partial sums) table in T3_DATA:
   void Fill();
   
@@ -131,11 +133,7 @@ private:
 // /FIND_Point_of_difference_e_dependency
 //------------------------------------------------------------------------------//
   const double kb=1.0e-3;//lower bound of 1-cos(theta_cm) axis for all energies.
-  
-//Changed:  
-  double Emin=10.0 * keV;//30.0 * keV;//minimum LS kinetic energy (for elastic scattering, if less, than Rutherford scattering) of the inc deuteron.
-//End of changed.
-  
+  double Emin=30.0 * keV;//minimum LS kinetic energy (for elastic scattering, if less, than Rutherford scattering) of the inc deuteron.
   double Emax=250.0 * MeV;//maximum LS kinetic energy (for elastic scattering) of the inc deuteron.
   double deltalncos;//the step of logarithmic 1-cos(theta_cm) axis
   double deltalnE;//the step of logarithmic lnE axis for energies in partial sums

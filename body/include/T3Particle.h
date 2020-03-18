@@ -16,11 +16,11 @@ struct Particle {
 Particle()
       : Particle<Floating>(t3::T3LorentzVector<Floating>(0.0,0.0,0.0,0.0),
                            t3::T3LorentzVector<Floating>(1.0/sqrt(3.0),1.0/sqrt(2.0),1.0/sqrt(6.0),G),
-                           1.0*MeV, 0.0, t3::PDG_t(2112), 1.0, 0, 1, 1, -1.0/*tr*/, -1/*rindex*/) {}
+                           1.0*MeV, 0.0, t3::PDG_t(2112), 1.0, 0, 1, 1, -1.0/*tr*/) {}
 
 
   Particle(T3LorentzVector<Floating> _r, T3LorentzVector<Floating> _p, Floating _m, Floating _de, t3::PDG_t _pdg,
-           Floating _wt, unsigned int _rs, int _ir, int _id, Floating _tr, int _rindex);
+           Floating _wt, unsigned int _rs, int _ir, int _id, Floating _tr);
 T3LorentzVector<Floating> r;
 T3LorentzVector<Floating> p;
 Floating m;
@@ -38,17 +38,6 @@ void SetEtot(Floating Etot, ParticleTable & aParticleTable)
 }
 
 Floating tr;
-
-//The sorting in Compress() in T3DataHolder.h is only for ir=0,1,2,3 (4 values of ir).
-//If we have 3 processes: T3InelasticddImpl.h, T3ElasticEMIonIonImpl.h
-//and T3ElasticStrongIonIonImpl.h, we will need 5 values of ir: 0,1,2,3,4.
-//But the sorting in Compress() in T3DataHolder.h is only for 4 values of ir
-//and for 5 values of ir will not work.
-//That is why we decided to create a field index of each particle, which will define which
-//process of ir=2 (we put ir=2 for both T3ElasticEMIonIonImpl.h and T3ElasticStrongIonIonImpl.h)
-//must be.
-int rindex;
-  
 void SetPxPyPzE(Floating px, Floating py, Floating pz, Floating E){p.SetPxPyPzE(px, py, pz, E);}
 void SetRxRyRzT(Floating rx, Floating ry, Floating rz, Floating t){r.SetPxPyPzE(rx, ry, rz, t);}
 Floating mass() const {return m;}
@@ -73,8 +62,8 @@ auto GenerateCanonical() {
 
 template <typename Floating>
 Particle<Floating>::Particle(T3LorentzVector<Floating> _r, T3LorentzVector<Floating> _p, Floating _m, Floating _de,
-                             t3::PDG_t _pdg, Floating _wt, unsigned int _rs, int _ir, int _id, Floating _tr, int _rindex)
-  : r{_r}, p{_p}, m(_m), de(_de), pdg(_pdg), wt(_wt), rs(_rs), ir(_ir), id(_id), tr(_tr), rindex(_rindex){}
+                             t3::PDG_t _pdg, Floating _wt, unsigned int _rs, int _ir, int _id, Floating _tr)
+  : r{_r}, p{_p}, m(_m), de(_de), pdg(_pdg), wt(_wt), rs(_rs), ir(_ir), id(_id), tr(_tr){}
 
 
 } // namespace t3

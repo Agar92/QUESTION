@@ -189,11 +189,7 @@ void T3R_DDCS::Fill()
 //It is from 10^(-3)*2*pcm^2 to 2*pcm^2.
 //It corresponds to the difference between green Rutherford curve
 //and the red approximation curve.
-
-//2 - ?
-//Think it is necessary here, because the particles are equal and differential cross section
-//is symmetric at |t|m=2*pcm^2:    
-    CS.at(i)=2*Fk.at(i).at(Bin3);
+    CS.at(i)=Fk.at(i).at(Bin3);
   }
   std::vector<T3double> argE;
   std::vector<T3double> argCS;
@@ -206,11 +202,15 @@ void T3R_DDCS::Fill()
     //ecs.push_back(new T3R_node(argE.at(i), argCS.at(i)));
   }
   T3TabulatedCS tcs(argE,argCS);
-  //std::cout<<"tcs: "<<" size="<<tcs.Get_size()<<std::endl;
+  std::cout<<"tcs: "<<" size="<<tcs.Get_size()<<std::endl;
+  //std::cout<<tcs<<std::endl;
+
+  std::cout<<"STEP #1"<<std::endl;
+  //sleep(3);
   ecs=T3R_RW(tcs, 1, 2);
 
-  //std::cout<<"PRINT ecs: size="<<ecs.size()<<std::endl;
-  //std::cout<<ecs<<std::endl;
+  std::cout<<"PRINT ecs: size="<<ecs.size()<<std::endl;
+  std::cout<<ecs<<std::endl;
   //exit(0);
   
   
@@ -290,6 +290,11 @@ void T3R_DDCS::Fill()
     tps.push_back(newnode);
   }
   trw.push_back(tps);
+  std::cout<<"End of Fill():"<<std::endl;
+  std::cout<<" trw size="<<trw.size()<<" tps size="<<tps.size()<<std::endl;
+  //std::cout<<"tps: \n"<<tps<<std::endl;
+  std::cout<<"trw: \n"<<trw<<std::endl;
+  std::cout<<"END ecs: "<<ecs.size()<<std::endl;
 }
 
 //returns the differential cross section from D-D approximation in inner units
